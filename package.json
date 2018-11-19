@@ -1,0 +1,26 @@
+{
+  "name": "quill-plugin-image-upload",
+  "version": "0.0.2",
+  "description": "a plugin for uploading image in Quill",
+  "main": "./src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dragonwong/quill-plugin-image-upload.git"
+  },
+  "keywords": [
+    "quill",
+    "image",
+    "upload",
+    "uploader",
+    "src"
+  ],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/dragonwong/quill-plugin-image-upload/issues"
+  },
+  "homepage": "https://github.com/dragonwong/quill-plugin-image-upload#readme"
+}

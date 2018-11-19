@@ -1,0 +1,15 @@
+# system ignore
+.DS_Store
+Thumbs.db
+
+# npm ignore
+node_modules/
+npm-debug.log
+
+# webpack ignore
+dist
+
+# eslint-cache
+.eslintcache
+.vscode
+package-lock.json
