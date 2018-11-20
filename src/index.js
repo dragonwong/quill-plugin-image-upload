@@ -58,7 +58,7 @@ class ImageUpload {
     if (imageElement) {
       imageElement.setAttribute('src', url);
       imageElement.removeAttribute('id');
-      imageElement.classList.remove('image-upload');
+      imageElement.classList.remove(constant.IMAGE_UPLOAD_PLACEHOLDER_CLASS_NAME);
     }
   }
 }

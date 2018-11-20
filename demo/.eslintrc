@@ -9,6 +9,7 @@
   },
   "extends": "eslint:recommended",
   "globals": {
-    "require": false
+    "require": false,
+    "module": false
   }
 }

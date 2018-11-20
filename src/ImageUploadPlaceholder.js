@@ -29,7 +29,7 @@ class ImageUploadPlaceholder extends Image {
 }
 
 ImageUploadPlaceholder.blotName = 'imageUpload';
-ImageUploadPlaceholder.className = 'image-upload';
+ImageUploadPlaceholder.className = constant.IMAGE_UPLOAD_PLACEHOLDER_CLASS_NAME;
 
 Quill.register({
   'formats/imageUploadPlaceholder': ImageUploadPlaceholder
