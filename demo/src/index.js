@@ -1,11 +1,11 @@
-import Quill from 'quill';
-import 'quill/dist/quill.snow.css';
-import imageUpload from 'quill-plugin-image-upload';
+const Quill = require('quill');
+require('quill/dist/quill.snow.css');
+const imageUpload = require('quill-plugin-image-upload');
 
 Quill.register('modules/imageUpload', imageUpload);
 
-var MOCK_IMG_SRC = 'http://tva1.sinaimg.cn/crop.0.0.217.217.180/4c8b519djw8fa45br0vpxj2062062q33.jpg';
-var quill = new Quill('#editor', {
+const MOCK_IMG_SRC = 'http://tva1.sinaimg.cn/crop.0.0.217.217.180/4c8b519djw8fa45br0vpxj2062062q33.jpg';
+const quill = new Quill('#editor', {
   theme: 'snow',
   modules: {
     toolbar: [

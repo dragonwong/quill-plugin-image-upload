@@ -1,7 +1,7 @@
-import "./ImageUploadPlaceholder.js";
-import './index.css';
-import imageIdManger from './imageIdManger';
-import constant from './constant';
+require('./ImageUploadPlaceholder.js');
+require('./index.css');
+const imageIdManger = require('./imageIdManger');
+const constant = require('./constant');
 
 class ImageUpload {
   constructor(quill, options) {

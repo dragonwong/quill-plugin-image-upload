@@ -9,6 +9,6 @@
   },
   "extends": "eslint:recommended",
   "globals": {
-    "BeeChatBridge": false
+    "require": false
   }
 }

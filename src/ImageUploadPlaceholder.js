@@ -1,7 +1,7 @@
-import Quill from 'quill';
-const Image = Quill.import('formats/image');
+const Quill = require('quill');
+const constant = require('./constant');
 
-import constant from './constant';
+const Image = Quill.import('formats/image');
 
 class ImageUploadPlaceholder extends Image {
   static create(value) {
