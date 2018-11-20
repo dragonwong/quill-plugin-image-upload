@@ -1,5 +1,5 @@
 require('./ImageUploadPlaceholder.js');
-require('./index.css');
+require('./style.js');
 const imageIdManger = require('./imageIdManger');
 const constant = require('./constant');
 
