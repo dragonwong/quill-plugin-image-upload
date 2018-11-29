@@ -39,7 +39,7 @@ const quill = new Quill('#editor', {
         return new Promise((resolve, reject) => {
           setTimeout(() => {
             resolve(MOCK_IMG_SRC); // Must resolve as a link to the image
-          }, 8000);
+          }, 1000);
           // const fd = new FormData();
           // fd.append("upload_file", file);
 

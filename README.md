@@ -2,8 +2,11 @@
 
 A plugin for uploading image in Quill 🌇
 
-- 🌟 preview uploading image
-- 🌟 hook for uploading image to get its url
+- 🌟 upload a image when it is inserted, and then replace the base64-url with a http-url
+- 🌟 preview the image which is uploading with a loading animation
+- 🌟 when the image is uploading, we can keep editing the content including changing the image's position or even delete the image.
+
+![](https://user-images.githubusercontent.com/2622602/49206584-73c6b080-f3ed-11e8-8164-aad28508d4c4.gif)
 
 ## Install
 
