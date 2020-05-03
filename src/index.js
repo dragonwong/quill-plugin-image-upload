@@ -4,6 +4,7 @@ const imageIdManger = require('./imageIdManger');
 const constant = require('./constant');
 
 class ImageUpload {
+
   /**
    * Instantiate the module given a quill instance and any options
    * @param {Quill} quill
@@ -29,7 +30,7 @@ class ImageUpload {
    */
   selectLocalImage() {
     const preProcessClickHandler = this.options.preProcessClick || this.preProcessClick;
-    preProcessClickHandler(this.processButtonClick.bind(this))
+    preProcessClickHandler(this.processButtonClick.bind(this));
   }
 
   preProcessClick(callback) {
@@ -37,16 +38,17 @@ class ImageUpload {
   }
 
   processButtonClick() {
-    const input = document.createElement('input');
-    input.setAttribute('type', 'file');
-    input.click();
-
-    // Listen upload local image and save to server
-    input.onchange = () => {
-      const preProcessInputHandler = this.options.preProcessInput || this.preProcessInput;
-      preProcessInputHandler(input, this.handleFileInput.bind(this));
-    };
+    this.fileHolder = document.createElement("input");
+    this.fileHolder.setAttribute("type", "file");
+    this.fileHolder.setAttribute('accept', 'image/*');
+    this.fileHolder.onchange = this.fileChanged.bind(this);
+    this.fileHolder.click();
   }
+
+  fileChanged () {
+    const preProcessInputHandler = this.options.preProcessInput || this.preProcessInput;
+    preProcessInputHandler(this.fileHolder, this.handleFileInput.bind(this));
+  };
 
   preProcessInput(input, callback) {
     callback(input);
@@ -130,6 +132,7 @@ class ImageUpload {
         const uploadUrl = urls.uploadUrl, downloadUrl = urls.downloadUrl;
 
         if (uploadUrl) {
+
           const xhr = new XMLHttpRequest();
           // init http query
           xhr.open(method, uploadUrl, true);
@@ -145,6 +148,7 @@ class ImageUpload {
             if (xhr.status === 200) {
               callbackOK(xhr.responseText, downloadUrl, this.insert.bind(this));
             } else {
+
               this.removeLoader();
               callbackKO({
                 code: xhr.status,
@@ -158,6 +162,7 @@ class ImageUpload {
             xhr.withCredentials = true;
           }
 
+
           xhr.send(file);
         } else {
           const reader = new FileReader();
@@ -165,6 +170,7 @@ class ImageUpload {
           reader.onload = event => {
             callbackOK(event.target.result, null, this.insert.bind(this));
           };
+
           reader.readAsDataURL(file);
         }
       }, this.removeLoader.bind(this));
