@@ -4,63 +4,211 @@ const imageIdManger = require('./imageIdManger');
 const constant = require('./constant');
 
 class ImageUpload {
-  constructor(quill, options) {
-    this.quill = quill;
-    this.options = options;
-    this.range = null;
+	/**
+	 * Instantiate the module given a quill instance and any options
+	 * @param {Quill} quill
+	 * @param {Object} options
+	 */
+	constructor(quill, options = {}) {
+		// save the quill reference
+		this.quill = quill;
+		// save options
+		this.options = options;
+		this.range = null;
+		this.imageId = null;
+		if (options.image) {
+			// listen for drop and paste events
+			this.quill
+				.getModule('toolbar')
+				.addHandler('image', this.selectLocalImage.bind(this));
+		}
+	}
 
-    if (typeof (this.options.upload) !== "function")
-      console.warn('[Missing config] upload function that returns a promise is required');
+	/**
+	 * Select local image
+	 */
+	selectLocalImage() {
+		const preProcessClickHandler = this.options.preProcessClick || this.preProcessClick;
+		preProcessClickHandler(this.processButtonClick.bind(this))
+	}
 
-    var toolbar = this.quill.getModule("toolbar");
-    toolbar.addHandler("image", this.selectLocalImage.bind(this));
-  }
+	preProcessClick(callback) {
+		callback();
+	}
 
-  selectLocalImage() {
-    this.range = this.quill.getSelection();
-    this.fileHolder = document.createElement("input");
-    this.fileHolder.setAttribute("type", "file");
-    this.fileHolder.setAttribute('accept', 'image/*');
-    this.fileHolder.onchange = this.fileChanged.bind(this);
-    this.fileHolder.click();
-  }
+	processButtonClick() {
+		const input = document.createElement('input');
+		input.setAttribute('type', 'file');
+		input.click();
 
-  fileChanged() {
-    const file = this.fileHolder.files[0];
-    const imageId = imageIdManger.generate();
+		// Listen upload local image and save to server
+		input.onchange = () => {
+			const preProcessInputHandler = this.options.preProcessInput || this.preProcessInput;
+			preProcessInputHandler(input, this.handleFileInput.bind(this));
+		};
+	}
 
-    const fileReader = new FileReader();
-    fileReader.addEventListener("load", () => {
-      let base64ImageSrc = fileReader.result;
-      this.insertBase64Image(base64ImageSrc, imageId);
-    }, false);
-    if (file) {
-      fileReader.readAsDataURL(file);
-    }
+	preProcessInput(input, callback) {
+		callback();
+	}
 
-    this.options.upload(file)
-      .then((imageUrl) => {
-          this.insertToEditor(imageUrl, imageId);
-        },
-        (error) => {
-          console.warn(error.message);
-        }
-      )
-  }
+	handleFileInput() {
+		const file = input.files[0];
 
-  insertBase64Image(url, imageId) {
-    const range = this.range;
-    this.quill.insertEmbed(range.index, "imageUpload", `${imageId}${constant.ID_SPLIT_FLAG}${url}`);
-  }
+		// file type is only image.
+		if (/^image\//.test(file.type)) {
+			const checkBeforeSend =
+				this.options.checkBeforeSend || this.checkBeforeSend.bind(this);
+			this.showLoader(file, () => checkBeforeSend(file, this.sendToServer.bind(this), this.removeLoader.bind(this)));
+		} else {
+			if (this.options.invalidFileHandler) {
+				this.options.invalidFileHandler();
+			}
+		}
+	}
 
-  insertToEditor(url, imageId) {
-    const imageElement = document.getElementById(imageId);
-    if (imageElement) {
-      imageElement.setAttribute('src', url);
-      imageElement.removeAttribute('id');
-      imageElement.classList.remove(constant.IMAGE_UPLOAD_PLACEHOLDER_CLASS_NAME);
-    }
-  }
+	showLoader(file, callback) {
+		this.range = this.quill.getSelection();
+		this.imageId = imageIdManger.generate();
+		const fileReader = new FileReader();
+		fileReader.addEventListener("load", () => {
+			let base64ImageSrc = fileReader.result;
+			this.insertBase64Image(base64ImageSrc);
+			callback();
+		}, false);
+		if (file) {
+			fileReader.readAsDataURL(file);
+		}
+	}
+
+	removeLoader() {
+		const imageElement = document.getElementById(this.imageId);
+		if (imageElement) {
+			imageElement.remove();
+		}
+	}
+
+	/**
+	 * Check file before sending to the server
+	 * @param {File} file
+	 * @param {Function} next
+	 */
+	checkBeforeSend(file, next, failureCb) {
+		next(file);
+	}
+
+	/**
+	 * Generates request url for sending to the server
+	 * @param {File} file
+	 * @param {Function} next
+	 */
+	generateFileUrls(file, successCb, failureCb) {
+		return successCb({
+			uploadUrl: this.options.uploadUrl,
+			downloadUrl: this.options.downloadUrl
+		});
+	}
+
+
+	/**
+	 * Send to server
+	 * @param {File} file
+	 */
+	sendToServer(file) {
+		// Handle custom upload
+		if (this.options.customUploader) {
+			this.options.customUploader(file, dataUrl => {
+				this.insert(dataUrl);
+			}, this.removeLoader.bind(this));
+		} else {
+			const generateFileUploadDownloadUrls = this.options.generateFileUrls || this.generateFileUrls.bind(this);
+			const method = this.options.method || 'PUT'
+			const headers = this.options.headers || {'Content-Type': file.type}
+			const callbackOK = this.options.callbackOK || this.uploadImageCallbackOK.bind(this)
+			const callbackKO = this.options.callbackKO || this.uploadImageCallbackKO.bind(this);
+			generateFileUploadDownloadUrls(file, (urls) => {
+				const uploadUrl = urls.uploadUrl, downloadUrl = urls.downloadUrl;
+
+				if (uploadUrl) {
+					const xhr = new XMLHttpRequest();
+					// init http query
+					xhr.open(method, uploadUrl, true);
+					// add custom headers
+					for (var index in headers) {
+						if (headers.hasOwnProperty(index)) {
+							xhr.setRequestHeader(index, headers[index]);
+						}
+					}
+
+					// listen callback
+					xhr.onload = () => {
+						if (xhr.status === 200) {
+							callbackOK(xhr.responseText, downloadUrl, this.insert.bind(this));
+						} else {
+							this.removeLoader();
+							callbackKO({
+								code: xhr.status,
+								type: xhr.statusText,
+								body: xhr.responseText
+							});
+						}
+					};
+
+					if (this.options.withCredentials) {
+						xhr.withCredentials = true;
+					}
+
+					xhr.send(file);
+				} else {
+					const reader = new FileReader();
+
+					reader.onload = event => {
+						callbackOK(event.target.result, null, this.insert.bind(this));
+					};
+					reader.readAsDataURL(file);
+				}
+			}, this.removeLoader.bind(this));
+		}
+	}
+
+	insertBase64Image(url) {
+		const index = (this.range || {}).index || this.quill.getLength();
+		this.quill.insertEmbed(index, "imageUpload", `${this.imageId}${constant.ID_SPLIT_FLAG}${url}`, 'user');
+	}
+
+	/**
+	 * Insert the image into the document at the current cursor position
+	 * @param {String} dataUrl  The base64-encoded image URI
+	 */
+	insert(dataUrl) {
+		const imageElement = document.getElementById(this.imageId);
+		if (imageElement) {
+			imageElement.setAttribute('src', dataUrl);
+			imageElement.removeAttribute('id');
+			imageElement.classList.remove(constant.IMAGE_UPLOAD_PLACEHOLDER_CLASS_NAME);
+		}
+	}
+
+	/**
+	 * callback on image upload succesfull
+	 * @param {Any} response http response
+	 */
+	uploadImageCallbackOK(response, downloadUrl, next) {
+		if (downloadUrl) {
+			next(downloadUrl);
+		} else {
+			next(response);
+		}
+	}
+
+	/**
+	 * callback on image upload failed
+	 * @param {Any} error http error
+	 */
+	uploadImageCallbackKO(error) {
+		this.removeLoader();
+		alert(error);
+	}
 }
 
 module.exports = ImageUpload;
