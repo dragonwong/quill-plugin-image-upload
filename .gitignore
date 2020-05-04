@@ -13,3 +13,6 @@ dist
 .eslintcache
 .vscode
 package-lock.json
+
+# IDE ignore
+.idea

@@ -40,7 +40,6 @@ class ImageUpload {
   processButtonClick() {
     this.fileHolder = document.createElement("input");
     this.fileHolder.setAttribute("type", "file");
-    this.fileHolder.setAttribute('accept', 'image/*');
     this.fileHolder.onchange = this.fileChanged.bind(this);
     this.fileHolder.click();
   }
