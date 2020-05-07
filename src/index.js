@@ -185,7 +185,12 @@ class ImageUpload {
   }
 
   insertBase64Image(url) {
-    const index = (this.range || {}).index || this.quill.getLength();
+    let index;
+    if (this.range) {
+      index = this.range.index;
+    } else {
+      index = this.quill.getLength() - 1;
+    }
     this.quill.insertEmbed(index, "imageUpload", `${this.imageId}${constant.ID_SPLIT_FLAG}${url}`, 'user');
   }
 
