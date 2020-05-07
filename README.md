@@ -31,12 +31,33 @@ new Quill('#editor', {
      'image'
     ],
     imageUpload: {
-      upload: file => {
-        // return a Promise that resolves in a link to the uploaded image
-        return new Promise((resolve, reject) => {
-          ajax().then(data => resolve(data.imageUrl));
-        });
-      }
+        preProcessClick: (callback) => {callback()},  // callback on image button click
+        preProcessInput: (input, callback) => {callback(input)},  // callback on image button click
+        uploadUrl: '', // server url. If the url is empty then the base64 returns
+        downloadUrl: '', // image get url.
+        method: 'PUT', // change query method, default 'PUT'
+        withCredentials: false, // withCredentials
+        headers: {'Content-Type': 'image/png'}, // add custom headers, example { token: 'your-token'}
+        customUploader: (file, successCallback, failureCallback) => {}, // add custom uploader
+        // personalize successful callback and call next function to insert new url to the editor
+        callbackOK: (serverResponse, downloadUrl, next) => {
+            next(serverResponse);
+        },
+        // personalize failed callback
+        callbackKO: serverError => {
+            alert(serverError);
+        },
+        // optional
+        // add callback when a image have been chosen
+        checkBeforeSend: (file, next, failureCallback) => {
+            console.log(file);
+            next(file); // go back to component and send to the server
+        },
+        invalidFileHandler: '', // handler callback for invalid file selection
+        loaderFilePath: '', // image file path to show in loader
+        generateFileUrls: (file, successCb, failureCb) => {return {uploadUrl: '', downloadUrl: ''}}, // generate upload
+                                                                                                    // and download urls
+        returnXhr: (xhr) => {}, // to get the xhr request
     },
   },
 });

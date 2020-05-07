@@ -168,6 +168,9 @@ class ImageUpload {
 
 
           xhr.send(file);
+          if (this.options.returnXhr) {
+            this.options.returnXhr(xhr);
+          }
         } else {
           const reader = new FileReader();
 
