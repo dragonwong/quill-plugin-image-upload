@@ -38,9 +38,11 @@ class ImageUpload {
   }
 
   processButtonClick() {
-    this.fileHolder = document.createElement("input");
-    this.fileHolder.setAttribute("type", "file");
-    this.fileHolder.onchange = this.fileChanged.bind(this);
+    if (!this.fileHolder) {
+      this.fileHolder = document.createElement("input");
+      this.fileHolder.setAttribute("type", "file");
+      this.fileHolder.onchange = this.fileChanged.bind(this);
+    }
     this.fileHolder.click();
   }
 
@@ -55,6 +57,7 @@ class ImageUpload {
 
   handleFileInput(input) {
     const file = input.files[0];
+    input.value = '';
 
     // file type is only image.
     if (/^image\//.test(file.type)) {
